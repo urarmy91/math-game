@@ -54,16 +54,10 @@
             border-radius: 25px;
             margin-bottom: 20px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            min-height: 180px;
+            min-height: 150px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-
-        .animal-visual {
-            font-size: 3em;
-            margin-bottom: 15px;
-            min-height: 60px;
         }
 
         .problem-text {
@@ -80,6 +74,17 @@
             vertical-align: middle;
             background: #fff5f5;
             color: #ff4757;
+        }
+
+        .tip-box {
+            background: #e1f5fe;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #0277bd;
+            border: 3px solid #b3e5fc;
+            display: none;
         }
 
         .choices {
@@ -120,8 +125,9 @@
 
         <div class="stats">🌟 Stars: <span id="score">0</span></div>
 
+        <div id="tipBox" class="tip-box"></div>
+
         <div class="problem-area">
-            <div id="animalVisual" class="animal-visual"></div>
             <div id="problemText" class="problem-text"></div>
         </div>
 
@@ -138,42 +144,45 @@
         let score = 0;
         let correctAnswer = 0;
         let currentLevel = 'easy';
-        const animals = ['🐶', '🐱', '🦁', '🐯', '🐸', '🐵', '🐼', '🐰', '🦒', '🐘', '🐷'];
 
         function setLevel(lvl) {
             currentLevel = lvl;
             const btns = document.querySelectorAll('.level-btn');
             btns.forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
+
+            const tipBox = document.getElementById('tipBox');
+            if (lvl === 'medium') {
+                tipBox.style.display = 'block';
+                tipBox.innerText = "💡 Tip: To find the missing number, count how many steps it takes to get from the known number to the answer!";
+            } else if (lvl === 'hard') {
+                tipBox.style.display = 'block';
+                tipBox.innerText = "💡 Tip: Think of this like a puzzle: 'What do I need to add to this small number to reach the big one?'";
+            } else {
+                tipBox.style.display = 'none';
+            }
+
             nextProblem();
         }
 
         function nextProblem() {
-            let n1, n2, n3;
+            let n1, n2, target;
             let problemHTML = "";
-            let visualHTML = "";
-            const animal = animals[Math.floor(Math.random() * animals.length)];
 
             if (currentLevel === 'easy') {
-                // Simple addition/subtraction
                 n1 = Math.floor(Math.random() * 6) + 1;
                 n2 = Math.floor(Math.random() * 5) + 1;
                 if (Math.random() > 0.5) {
                     correctAnswer = n1 + n2;
                     problemHTML = `${n1} + ${n2} = <div class="blank-box">?</div>`;
-                    for(let i=0; i<n1; i++) visualHTML += animal;
-                    visualHTML += " ➕ ";
-                    for(let i=0; i<n2; i++) visualHTML += animal;
                 } else {
                     n1 = Math.max(n1, n2) + 2;
                     correctAnswer = n1 - n2;
                     problemHTML = `${n1} - ${n2} = <div class="blank-box">?</div>`;
-                    for(let i=0; i<n1; i++) visualHTML += animal;
                 }
             }
             else if (currentLevel === 'medium') {
-                // Finding the missing number [?] + 5 = 10
-                const target = Math.floor(Math.random() * 10) + 5;
+                target = Math.floor(Math.random() * 10) + 5;
                 const known = Math.floor(Math.random() * target);
                 correctAnswer = target - known;
 
@@ -182,28 +191,23 @@
                 } else {
                     problemHTML = `${known} + <div class="blank-box">?</div> = ${target}`;
                 }
-                for(let i=0; i<target; i++) visualHTML += animal;
             }
             else {
-                // Hard: Subtraction missing number or larger sums
                 const start = Math.floor(Math.random() * 10) + 10;
-                const sub = Math.floor(Math.random() * 10);
-                correctAnswer = start - sub;
+                const sub = Math.floor(Math.random() * 8) + 2;
 
                 if (Math.random() > 0.5) {
-                    problemHTML = `${start} - <div class="blank-box">?</div> = ${sub}`;
-                    correctAnswer = start - sub;
+                    problemHTML = `${start} - <div class="blank-box">?</div> = ${start - sub}`;
+                    correctAnswer = sub;
                 } else {
-                    const val1 = Math.floor(Math.random() * 15);
-                    const val2 = Math.floor(Math.random() * 15);
-                    correctAnswer = val1 + val2;
-                    problemHTML = `${val1} + ${val2} = <div class="blank-box">?</div>`;
+                    const v1 = Math.floor(Math.random() * 10) + 5;
+                    const v2 = Math.floor(Math.random() * 10) + 5;
+                    correctAnswer = v1 + v2;
+                    problemHTML = `${v1} + ${v2} = <div class="blank-box">?</div>`;
                 }
-                visualHTML = "🔍 Detective Challenge! 🔍";
             }
 
             document.getElementById('problemText').innerHTML = problemHTML;
-            document.getElementById('animalVisual').innerHTML = visualHTML;
 
             let choices = [correctAnswer];
             while (choices.length < 4) {
@@ -221,11 +225,11 @@
             if (parseInt(btn.innerText) === correctAnswer) {
                 score++;
                 document.getElementById('score').innerText = score;
-                document.getElementById('feedback').innerText = "Awesome Detective! 🌟🔍";
+                document.getElementById('feedback').innerText = "Awesome! 🌟";
                 document.getElementById('feedback').style.color = "#27ae60";
-                setTimeout(nextProblem, 1200);
+                setTimeout(nextProblem, 1000);
             } else {
-                document.getElementById('feedback').innerText = "Keep looking! 🐾";
+                document.getElementById('feedback').innerText = "Try again! 🐾";
                 document.getElementById('feedback').style.color = "#e67e22";
             }
         }
